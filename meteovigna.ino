@@ -11,6 +11,7 @@
 #define WINDPIN D2           // Digital pin for wind measurement 
 #define DROPPIN1 A1         // Analog pin for drop sensor #1
 #define DROPPIN2 A2         // Analog pin for drop sensor #2
+#define MOISTPIN A4         // Analog pin for moisture sensor
 #define TRTPIN D0          // digital pin to activate the drop and wind sensors
 
 int sleepTime = 900;   // si risveglia ogni 15 minuti, 7200 == ogni 2 ore
@@ -49,6 +50,7 @@ float umi = 0;
 float temp = 0;
 float dew = 0;
 int rain = 4; // 4 = error/startup, 3 = no rain, 2 = light rain, 1 normal rain, 0 flood
+int moisture = 0;
     
 
 // variabile per pubblicare
@@ -83,12 +85,14 @@ void loop()
     delay(500);
     getDrop();
     delay(500);
+    getMoisture();
+    delay(500);
     getDHT();
     delay(500);
     digitalWrite(TRTPIN, LOW); // spegne i sensori tramite transistor
     // pubblica i valori separati da virgola
     // volt, soc, frValue, umi, temp, pioggia, windspeed, umiterreno
-    Particle.publish("V", String::format("%.1f %.0f %.0f %.0f %.1f %d %.0f %.0f",volt, soc, frValue, umi, temp, rain, windspeed, 0) , 60, PRIVATE);
+    Particle.publish("V", String::format("%.1f %.0f %.0f %.0f %.1f %d %.0f %d",volt, soc, frValue, umi, temp, rain, windspeed, moisture) , 60, PRIVATE);
 
     delay(10000);
     System.sleep(SLEEP_MODE_DEEP, sleepTime); // pubblica i dati ogni 2 ore - inserire controllo su stato carica batteria, sleep 12 ore se soc < 20%
@@ -113,6 +117,10 @@ void getDrop() {
     // rain = map(sensorReading, sensorMin, sensorMax, 0, 3);
     rain = sensorReading;
 
+}
+
+void getMoisture() {
+    moisture = analogRead(MOISTPIN);
 }
 
 void getWind() {
@@ -219,3 +227,4 @@ void  getDHT() {
     n++;
     }
 */
+
